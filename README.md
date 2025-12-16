@@ -60,7 +60,7 @@ Family members can:
 ### Change the Family Code
 In `family-portal.html`, find this line and change it:
 ```javascript
-const FAMILY_CODE = 'margie2024';
+const FAMILY_CODE = '**********';
 ```
 
 ### Change Friendly Messages
