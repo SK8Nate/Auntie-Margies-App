@@ -46,7 +46,7 @@ Now it'll look and feel like a real app!
 
 The family portal is at `/family-portal.html`
 
-**Default login code:** `margie2024`
+**Default login code:** `*********`
 
 (Change this in the family-portal.html file - search for `FAMILY_CODE`)
 
