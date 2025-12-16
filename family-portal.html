@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auntie Margie's Daily List - Family Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #5B8A72;
+            --primary-light: #7BA894;
+            --primary-dark: #3D5E4C;
+            --warm-bg: #FFF8F0;
+            --warm-cream: #FEF3E2;
+            --text-dark: #2D3436;
+            --text-medium: #636E72;
+            --accent-coral: #E17055;
+            --accent-sunny: #FDCB6E;
+            --accent-sky: #74B9FF;
+            --white: #FFFFFF;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+            --radius: 20px;
+            --radius-sm: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--warm-bg);
+            color: var(--text-dark);
+            font-size: 16px;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .login-logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: var(--text-medium);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #E0E0E0;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-family: 'Nunito', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .error-message {
+            color: var(--accent-coral);
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* Main App (hidden until logged in) */
+        .app-container {
+            display: none;
+        }
+
+        .app-container.active {
+            display: block;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: var(--white);
+            padding: 25px 20px;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            color: var(--white);
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Tabs */
+        .tabs {
+            background: var(--white);
+            border-bottom: 2px solid #E0E0E0;
+        }
+
+        .tabs-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 18px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--text-medium);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-icon {
+            margin-right: 8px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Add Event Form */
+        .event-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 500px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .submit-btn {
+            padding: 18px 30px;
+            background: var(--accent-coral);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .success-message {
+            background: #D4EDDA;
+            color: #155724;
+            padding: 15px;
+            border-radius: var(--radius-sm);
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        /* Events List */
+        .event-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: var(--warm-cream);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .event-date {
+            font-weight: 700;
+            color: var(--primary-dark);
+            min-width: 120px;
+        }
+
+        .event-time {
+            font-weight: 600;
+            color: var(--text-medium);
+            min-width: 80px;
+        }
+
+        .event-name {
+            flex: 1;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--accent-coral);
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Journal Entries */
+        .journal-entry {
+            background: var(--warm-cream);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .journal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .journal-date {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 18px;
+        }
+
+        .journal-time {
+            color: var(--text-medium);
+        }
+
+        .journal-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--white);
+            border-radius: var(--radius-sm);
+        }
+
+        .journal-summary {
+            padding: 15px;
+            background: rgba(91, 138, 114, 0.1);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--primary);
+        }
+
+        .journal-summary-label {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-medium);
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        /* Filter */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #E0E0E0;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-family: 'Nunito', sans-serif;
+            background: var(--white);
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-synced {
+            background: #D4EDDA;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #FFF3CD;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <div class="login-logo">🏠💚</div>
+            <h1 class="login-title">Margie's List - Family Portal</h1>
+            <p class="login-subtitle">Add events and check on Auntie Margie's day</p>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Family Code</label>
+                    <input type="password" class="form-input" id="familyCode" placeholder="Enter the family code" required>
+                </div>
+                <button type="submit" class="login-btn">Log In</button>
+            </form>
+            <p class="error-message" id="loginError">Incorrect family code. Please try again.</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-container" id="appContainer">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div>
+                    <h1 class="header-title">🏠 Margie's List - Family Portal</h1>
+                    <p class="header-subtitle">Helping Auntie Margie stay organised</p>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tabs-inner">
+                <div class="tab active" onclick="switchTab('add')" data-tab="add">
+                    <span class="tab-icon">📅</span>Add Event
+                </div>
+                <div class="tab" onclick="switchTab('events')" data-tab="events">
+                    <span class="tab-icon">📋</span>Upcoming Events
+                </div>
+                <div class="tab" onclick="switchTab('journal')" data-tab="journal">
+                    <span class="tab-icon">📝</span>Margie's Journal
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Add Event Tab -->
+            <div class="tab-content active" id="tab-add">
+                <div class="card">
+                    <h2 class="card-title">📅 Add an Event for Margie</h2>
+                    <form class="event-form" onsubmit="handleAddEvent(event)">
+                        <div class="form-group">
+                            <label class="form-label">What's happening?</label>
+                            <input type="text" class="form-input" id="eventTitle" placeholder="e.g., Doctor's appointment, Tea with Sarah" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Date</label>
+                                <input type="date" class="form-input" id="eventDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Time</label>
+                                <input type="time" class="form-input" id="eventTime" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notes (optional)</label>
+                            <input type="text" class="form-input" id="eventNotes" placeholder="Any extra details for Margie">
+                        </div>
+                        <button type="submit" class="submit-btn">✨ Add Event for Margie</button>
+                    </form>
+                    <div class="success-message" id="addSuccess">
+                        Event added! Margie will see it on her app. 💚
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">💡 Tips</h2>
+                    <ul style="padding-left: 20px; color: var(--text-medium);">
+                        <li>Keep event titles short and clear</li>
+                        <li>Margie will get a reminder 1 hour before</li>
+                        <li>She'll also see a morning summary of her day</li>
+                        <li>Add notes for any extra details she might need</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Events List Tab -->
+            <div class="tab-content" id="tab-events">
+                <div class="card">
+                    <h2 class="card-title">📋 Upcoming Events</h2>
+                    <div class="filter-bar">
+                        <select class="filter-select" id="eventFilter" onchange="filterEvents()">
+                            <option value="upcoming">Upcoming</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="all">All Events</option>
+                        </select>
+                    </div>
+                    <div id="eventsList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal Tab -->
+            <div class="tab-content" id="tab-journal">
+                <div class="card">
+                    <h2 class="card-title">📝 Margie's Journal Entries</h2>
+                    <p style="color: var(--text-medium); margin-bottom: 20px;">
+                        See what Margie has been talking about during her day
+                    </p>
+                    <div class="filter-bar">
+                        <select class="filter-select" id="journalFilter" onchange="filterJournal()">
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="all">All Entries</option>
+                        </select>
+                    </div>
+                    <div id="journalList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ===== CONFIGURATION =====
+        // In a real app, this would be handled securely on a server
+        const FAMILY_CODE = 'margie2024'; // Change this to your own code
+        
+        // ===== STATE =====
+        let state = {
+            events: [],
+            journalEntries: []
+        };
+
+        // ===== INITIALIZATION =====
+        function init() {
+            // Check if already logged in
+            const isLoggedIn = localStorage.getItem('margieListFamilyLoggedIn');
+            if (isLoggedIn === 'true') {
+                showApp();
+            }
+            
+            // Set default date to today
+            document.getElementById('eventDate').valueAsDate = new Date();
+            
+            // Load data
+            loadData();
+        }
+
+        function loadData() {
+            // In a real app, this would fetch from a server
+            // For demo, we'll use localStorage and some sample data
+            const savedState = localStorage.getItem('margieListFamilyState');
+            if (savedState) {
+                state = JSON.parse(savedState);
+            } else {
+                // Sample data
+                const today = new Date().toISOString().split('T')[0];
+                state = {
+                    events: [
+                        { id: '1', title: 'Morning tea with Sarah', date: today, time: '10:30', notes: '' },
+                        { id: '2', title: 'Doctor appointment', date: today, time: '14:00', notes: 'Dr. Smith at the clinic' },
+                        { id: '3', title: 'Video call with grandkids', date: today, time: '17:00', notes: '' }
+                    ],
+                    journalEntries: [
+                        {
+                            id: '1',
+                            timestamp: new Date().toISOString(),
+                            text: "Had a lovely cup of tea this morning. The birds were singing outside. Sarah called to confirm our morning tea date.",
+                            summary: "Mima had tea, enjoyed the birds singing, and confirmed plans with Sarah."
+                        }
+                    ]
+                };
+                saveData();
+            }
+            
+            renderEvents();
+            renderJournal();
+        }
+
+        function saveData() {
+            localStorage.setItem('margieListFamilyState', JSON.stringify(state));
+        }
+
+        // ===== AUTHENTICATION =====
+        function handleLogin(e) {
+            e.preventDefault();
+            const code = document.getElementById('familyCode').value;
+            
+            if (code === FAMILY_CODE) {
+                localStorage.setItem('margieListFamilyLoggedIn', 'true');
+                showApp();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('margieListFamilyLoggedIn');
+            location.reload();
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContainer').classList.add('active');
+        }
+
+        // ===== TABS =====
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${tabName}`);
+            });
+        }
+
+        // ===== EVENTS =====
+        function handleAddEvent(e) {
+            e.preventDefault();
+            
+            const event = {
+                id: Date.now().toString(),
+                title: document.getElementById('eventTitle').value,
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('eventTime').value,
+                notes: document.getElementById('eventNotes').value
+            };
+            
+            state.events.push(event);
+            saveData();
+            renderEvents();
+            
+            // Clear form
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventNotes').value = '';
+            
+            // Show success message
+            const success = document.getElementById('addSuccess');
+            success.classList.add('show');
+            setTimeout(() => success.classList.remove('show'), 3000);
+        }
+
+        function deleteEvent(id) {
+            if (confirm('Remove this event?')) {
+                state.events = state.events.filter(e => e.id !== id);
+                saveData();
+                renderEvents();
+            }
+        }
+
+        function filterEvents() {
+            renderEvents();
+        }
+
+        function renderEvents() {
+            const filter = document.getElementById('eventFilter').value;
+            const container = document.getElementById('eventsList');
+            const today = new Date().toISOString().split('T')[0];
+            
+            let filtered = [...state.events];
+            
+            // Apply filter
+            if (filter === 'today') {
+                filtered = filtered.filter(e => e.date === today);
+            } else if (filter === 'week') {
+                const weekFromNow = new Date();
+                weekFromNow.setDate(weekFromNow.getDate() + 7);
+                filtered = filtered.filter(e => e.date >= today && e.date <= weekFromNow.toISOString().split('T')[0]);
+            } else if (filter === 'upcoming') {
+                filtered = filtered.filter(e => e.date >= today);
+            }
+            
+            // Sort by date and time
+            filtered.sort((a, b) => {
+                if (a.date !== b.date) return a.date.localeCompare(b.date);
+                return a.time.localeCompare(b.time);
+            });
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No events found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filtered.map(event => {
+                const dateObj = new Date(event.date);
+                const dateStr = dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+                const timeStr = formatTime(event.time);
+                
+                return `
+                    <div class="event-item">
+                        <span class="event-date">${dateStr}</span>
+                        <span class="event-time">${timeStr}</span>
+                        <span class="event-name">${event.title}${event.notes ? ` <small style="color: var(--text-medium);">(${event.notes})</small>` : ''}</span>
+                        <button class="delete-btn" onclick="deleteEvent('${event.id}')" title="Delete">🗑️</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===== JOURNAL =====
+        function filterJournal() {
+            renderJournal();
+        }
+
+        function renderJournal() {
+            const filter = document.getElementById('journalFilter').value;
+            const container = document.getElementById('journalList');
+            const today = new Date().toISOString().split('T')[0];
+            
+            let filtered = [...state.journalEntries];
+            
+            // Apply filter
+            if (filter === 'today') {
+                filtered = filtered.filter(e => e.timestamp.startsWith(today));
+            } else if (filter === 'week') {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                filtered = filtered.filter(e => new Date(e.timestamp) >= weekAgo);
+            }
+            
+            // Sort by date (newest first)
+            filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>No journal entries yet</p>
+                        <p style="margin-top: 10px; font-size: 14px;">When Margie talks to the app, her entries will appear here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filtered.map(entry => {
+                const dateObj = new Date(entry.timestamp);
+                const dateStr = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                const timeStr = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                
+                return `
+                    <div class="journal-entry">
+                        <div class="journal-header">
+                            <span class="journal-date">${dateStr}</span>
+                            <span class="journal-time">🕐 ${timeStr}</span>
+                        </div>
+                        <div class="journal-text">"${entry.text}"</div>
+                        ${entry.summary ? `
+                            <div class="journal-summary">
+                                <div class="journal-summary-label">📋 Summary:</div>
+                                ${entry.summary}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===== HELPERS =====
+        function formatTime(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'pm' : 'am';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes}${ampm}`;
+        }
+
+        // ===== START =====
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
