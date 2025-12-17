@@ -595,30 +595,12 @@
         }
 
         function loadData() {
-            // In a real app, this would fetch from a server
-            // For demo, we'll use localStorage and some sample data
-            const savedState = localStorage.getItem('margieListFamilyState');
-            if (savedState) {
-                state = JSON.parse(savedState);
-            } else {
-                // Sample data
-                const today = new Date().toISOString().split('T')[0];
-                state = {
-                    events: [
-                        { id: '1', title: 'Morning tea with Sarah', date: today, time: '10:30', notes: '' },
-                        { id: '2', title: 'Doctor appointment', date: today, time: '14:00', notes: 'Dr. Smith at the clinic' },
-                        { id: '3', title: 'Video call with grandkids', date: today, time: '17:00', notes: '' }
-                    ],
-                    journalEntries: [
-                        {
-                            id: '1',
-                            timestamp: new Date().toISOString(),
-                            text: "Had a lovely cup of tea this morning. The birds were singing outside. Sarah called to confirm our morning tea date.",
-                            summary: "Mima had tea, enjoyed the birds singing, and confirmed plans with Sarah."
-                        }
-                    ]
-                };
-                saveData();
+            // Load from shared storage (synced with Margie's app)
+            const sharedData = localStorage.getItem('margieListSharedData');
+            if (sharedData) {
+                const parsed = JSON.parse(sharedData);
+                state.events = parsed.events || [];
+                state.journalEntries = parsed.journalEntries || [];
             }
             
             renderEvents();
@@ -626,7 +608,12 @@
         }
 
         function saveData() {
-            localStorage.setItem('margieListFamilyState', JSON.stringify(state));
+            // Save to shared storage (synced with Margie's app)
+            localStorage.setItem('margieListSharedData', JSON.stringify({
+                events: state.events,
+                journalEntries: state.journalEntries,
+                lastUpdated: new Date().toISOString()
+            }));
         }
 
         // ===== AUTHENTICATION =====

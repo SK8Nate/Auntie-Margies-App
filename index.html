@@ -271,7 +271,7 @@
             font-size: calc(var(--font-size-base) * 0.95);
         }
 
-        /* Voice Journal Button */
+        /* Journal Button */
         .journal-btn {
             width: 100%;
             background: linear-gradient(135deg, var(--accent-coral) 0%, #D63031 100%);
@@ -308,6 +308,105 @@
 
         .mic-icon {
             font-size: 32px;
+        }
+
+        /* Journal Choice Modal */
+        .choice-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px;
+            border: 3px solid transparent;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .choice-btn-type {
+            background: linear-gradient(135deg, var(--accent-sky) 0%, #0984E3 100%);
+            color: var(--white);
+        }
+
+        .choice-btn-type:hover, .choice-btn-type:active {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .choice-btn-speak {
+            background: linear-gradient(135deg, var(--accent-coral) 0%, #D63031 100%);
+            color: var(--white);
+        }
+
+        .choice-btn-speak:hover, .choice-btn-speak:active {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .choice-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .choice-label {
+            font-size: var(--font-size-large);
+            font-weight: 700;
+        }
+
+        .choice-desc {
+            font-size: var(--font-size-base);
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .cancel-choice-btn {
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            border: 2px solid var(--text-medium);
+            border-radius: var(--radius-sm);
+            color: var(--text-medium);
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .cancel-choice-btn:hover {
+            background: var(--warm-cream);
+        }
+
+        /* Text Entry Modal */
+        .text-entry-area {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid var(--primary-light);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            font-family: 'Nunito', sans-serif;
+            resize: vertical;
+            min-height: 150px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .text-entry-area:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(91, 138, 114, 0.2);
+        }
+
+        .text-entry-area::placeholder {
+            color: var(--text-medium);
+            opacity: 0.7;
         }
 
         /* Recent Journal Entries */
@@ -474,16 +573,20 @@
             text-align: center;
         }
 
+        .recording-modal .modal-title {
+            margin-bottom: 20px;
+        }
+
         .recording-indicator {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             background: var(--accent-coral);
             border-radius: 50%;
-            margin: 0 auto 25px;
+            margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 50px;
+            font-size: 45px;
             animation: pulse 1.5s infinite;
         }
 
@@ -646,8 +749,8 @@
         </div>
 
         <!-- Voice Journal Button -->
-        <button class="journal-btn" id="journalBtn" onclick="startRecording()">
-            <span class="mic-icon">🎤</span>
+        <button class="journal-btn" id="journalBtn" onclick="openJournalChoice()">
+            <span class="mic-icon">📝</span>
             <span>Tell me about your day, Margie!</span>
         </button>
 
@@ -700,9 +803,53 @@
         </div>
     </div>
 
+    <!-- Journal Choice Modal -->
+    <div class="modal-overlay" id="journalChoiceModal">
+        <div class="modal">
+            <h2 class="modal-title">📝 Tell Me About Your Day</h2>
+            <p style="text-align: center; color: var(--text-medium); margin-bottom: 25px;">
+                How would you like to add your entry, Margie?
+            </p>
+            <div class="choice-buttons">
+                <button class="choice-btn choice-btn-type" onclick="openTextEntry()">
+                    <span class="choice-icon">⌨️</span>
+                    <span class="choice-label">Type It</span>
+                    <span class="choice-desc">Write what you've been up to</span>
+                </button>
+                <button class="choice-btn choice-btn-speak" onclick="openVoiceEntry()">
+                    <span class="choice-icon">🎤</span>
+                    <span class="choice-label">Speak It</span>
+                    <span class="choice-desc">Talk and I'll write it down</span>
+                </button>
+            </div>
+            <button class="cancel-choice-btn" onclick="closeJournalChoice()">Maybe Later</button>
+        </div>
+    </div>
+
+    <!-- Text Entry Modal -->
+    <div class="modal-overlay" id="textEntryModal">
+        <div class="modal">
+            <h2 class="modal-title">⌨️ Type Your Entry</h2>
+            <p style="text-align: center; color: var(--text-medium); margin-bottom: 20px;">
+                What have you been up to today, Margie?
+            </p>
+            <textarea 
+                class="text-entry-area" 
+                id="textEntryArea" 
+                placeholder="I had a lovely morning..."
+                rows="6"
+            ></textarea>
+            <div class="recording-buttons">
+                <button class="cancel-btn" onclick="closeTextEntry()">Cancel</button>
+                <button class="stop-btn" onclick="saveTextEntry()">Save Entry</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Recording Modal -->
     <div class="modal-overlay" id="recordingModal">
         <div class="modal recording-modal">
+            <h2 class="modal-title">🎤 Speak Your Entry</h2>
             <div class="recording-indicator" id="recordingIndicator">🎤</div>
             <p class="recording-text" id="recordingText">Listening to you, Margie...</p>
             <div class="transcript-preview" id="transcriptPreview">
@@ -763,97 +910,31 @@
         }
 
         function loadState() {
-            const saved = localStorage.getItem('margieListState');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                state = { ...state, ...parsed };
+            // Load settings from main app storage
+            const savedSettings = localStorage.getItem('margieListSettings');
+            if (savedSettings) {
+                state.settings = JSON.parse(savedSettings);
             }
             
-            // Load demo events if none exist
-            if (state.events.length === 0) {
-                loadDemoEvents();
+            // Load events and journal from shared family storage
+            const familyData = localStorage.getItem('margieListSharedData');
+            if (familyData) {
+                const parsed = JSON.parse(familyData);
+                state.events = parsed.events || [];
+                state.journalEntries = parsed.journalEntries || [];
             }
         }
 
         function saveState() {
-            localStorage.setItem('margieListState', JSON.stringify(state));
-        }
-
-        function loadDemoEvents() {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const dayAfter = new Date(today);
-            dayAfter.setDate(dayAfter.getDate() + 2);
-            const inThreeDays = new Date(today);
-            inThreeDays.setDate(inThreeDays.getDate() + 3);
-            const inFiveDays = new Date(today);
-            inFiveDays.setDate(inFiveDays.getDate() + 5);
+            // Save settings separately (app-specific)
+            localStorage.setItem('margieListSettings', JSON.stringify(state.settings));
             
-            state.events = [
-                // Today's events
-                {
-                    id: 'demo1',
-                    title: 'Morning tea with Sarah',
-                    date: formatDateForStorage(today),
-                    time: '10:30',
-                    completed: false
-                },
-                {
-                    id: 'demo2',
-                    title: 'Doctor appointment',
-                    date: formatDateForStorage(today),
-                    time: '14:00',
-                    completed: false
-                },
-                {
-                    id: 'demo3',
-                    title: 'Video call with the grandkids',
-                    date: formatDateForStorage(today),
-                    time: '17:00',
-                    completed: false
-                },
-                // Tomorrow
-                {
-                    id: 'demo4',
-                    title: 'Hairdresser appointment',
-                    date: formatDateForStorage(tomorrow),
-                    time: '11:00',
-                    completed: false
-                },
-                // Day after tomorrow
-                {
-                    id: 'demo5',
-                    title: 'Lunch with Betty',
-                    date: formatDateForStorage(dayAfter),
-                    time: '12:30',
-                    completed: false
-                },
-                {
-                    id: 'demo6',
-                    title: 'Book club meeting',
-                    date: formatDateForStorage(dayAfter),
-                    time: '15:00',
-                    completed: false
-                },
-                // In three days
-                {
-                    id: 'demo7',
-                    title: 'Grocery shopping',
-                    date: formatDateForStorage(inThreeDays),
-                    time: '10:00',
-                    completed: false
-                },
-                // In five days
-                {
-                    id: 'demo8',
-                    title: 'Church service',
-                    date: formatDateForStorage(inFiveDays),
-                    time: '09:30',
-                    completed: false
-                }
-            ];
-            saveState();
+            // Save events and journal to shared storage (synced with family portal)
+            localStorage.setItem('margieListSharedData', JSON.stringify({
+                events: state.events,
+                journalEntries: state.journalEntries,
+                lastUpdated: new Date().toISOString()
+            }));
         }
 
         // ===== DATE & TIME =====
@@ -1062,10 +1143,49 @@
             container.innerHTML = html;
         }
 
-        // ===== VOICE JOURNAL =====
+        // ===== JOURNAL ENTRY =====
         let recognition;
         let isRecording = false;
         let transcript = '';
+
+        // Journal Choice Modal
+        function openJournalChoice() {
+            document.getElementById('journalChoiceModal').classList.add('active');
+        }
+
+        function closeJournalChoice() {
+            document.getElementById('journalChoiceModal').classList.remove('active');
+        }
+
+        // Text Entry
+        function openTextEntry() {
+            closeJournalChoice();
+            document.getElementById('textEntryArea').value = '';
+            document.getElementById('textEntryModal').classList.add('active');
+            // Focus the text area after a short delay for the modal to appear
+            setTimeout(() => {
+                document.getElementById('textEntryArea').focus();
+            }, 100);
+        }
+
+        function closeTextEntry() {
+            document.getElementById('textEntryModal').classList.remove('active');
+            document.getElementById('textEntryArea').value = '';
+        }
+
+        function saveTextEntry() {
+            const text = document.getElementById('textEntryArea').value.trim();
+            if (text) {
+                saveJournalEntry(text);
+            }
+            closeTextEntry();
+        }
+
+        // Voice Entry
+        function openVoiceEntry() {
+            closeJournalChoice();
+            startRecording();
+        }
 
         function initSpeechRecognition() {
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
