@@ -24,12 +24,12 @@
         // Replace these values with your own from Firebase Console
         // ========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyBQbfG-S8fck0I-m3_UYRsIb2Dmuojdgb4",
-            authDomain: "aunite-margie-s-app.firebaseapp.com",
-            projectId: "aunite-margie-s-app",
-            storageBucket: "aunite-margie-s-app.firebasestorage.app",
-            messagingSenderId: "479080971530",
-            appId: "1:479080971530:web:70bdda6d0b3abe7ffb0ef3"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         // Initialize Firebase
@@ -1284,7 +1284,22 @@
                 recognition.interimResults = true;
                 recognition.lang = 'en-GB';
                 
+                recognition.onstart = () => {
+                    console.log('Speech recognition started');
+                    document.getElementById('recordingText').textContent = "I'm listening, Margie...";
+                };
+                
+                recognition.onaudiostart = () => {
+                    console.log('Audio capturing started');
+                };
+                
+                recognition.onspeechstart = () => {
+                    console.log('Speech detected');
+                    document.getElementById('recordingText').textContent = "I can hear you! Keep talking...";
+                };
+                
                 recognition.onresult = (event) => {
+                    console.log('Got result:', event.results);
                     transcript = '';
                     for (let i = 0; i < event.results.length; i++) {
                         transcript += event.results[i][0].transcript;
@@ -1292,16 +1307,55 @@
                     document.getElementById('transcriptPreview').textContent = transcript || 'What you say will appear here...';
                 };
                 
+                recognition.onspeechend = () => {
+                    console.log('Speech ended');
+                    document.getElementById('recordingText').textContent = "Waiting for you to speak...";
+                };
+                
                 recognition.onerror = (event) => {
                     console.error('Speech recognition error:', event.error);
-                    if (event.error === 'not-allowed') {
-                        alert("Margie, I need permission to use the microphone. Please allow it in your browser settings!");
+                    
+                    let errorMessage = '';
+                    switch(event.error) {
+                        case 'not-allowed':
+                            errorMessage = "Microphone access was denied. Please allow it in your browser settings.";
+                            break;
+                        case 'no-speech':
+                            errorMessage = "No speech detected. Try speaking louder or closer to the microphone.";
+                            // Don't close modal, let them try again
+                            document.getElementById('recordingText').textContent = "I didn't hear anything. Try again...";
+                            return;
+                        case 'audio-capture':
+                            errorMessage = "No microphone found. Please check your microphone is connected.";
+                            break;
+                        case 'network':
+                            errorMessage = "Network error. Speech recognition needs an internet connection.";
+                            break;
+                        case 'aborted':
+                            // User cancelled, no need to show error
+                            return;
+                        case 'service-not-allowed':
+                            errorMessage = "Speech service not allowed. This may be a browser restriction.";
+                            break;
+                        default:
+                            errorMessage = "Something went wrong with speech recognition. Error: " + event.error;
+                    }
+                    
+                    if (errorMessage) {
+                        alert(errorMessage);
+                        cancelRecording();
                     }
                 };
                 
                 recognition.onend = () => {
+                    console.log('Recognition ended, isRecording:', isRecording);
                     if (isRecording) {
-                        recognition.start(); // Keep listening
+                        // Restart if we're still supposed to be recording
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            console.log('Could not restart recognition:', e);
+                        }
                     }
                 };
                 
@@ -1318,13 +1372,16 @@
             
             isRecording = true;
             transcript = '';
-            document.getElementById('transcriptPreview').innerHTML = '<em>What you say will appear here...</em>';
+            document.getElementById('transcriptPreview').innerHTML = '<em>Waiting for you to speak...</em>';
+            document.getElementById('recordingText').textContent = "Starting...";
             document.getElementById('recordingModal').classList.add('active');
             
             try {
                 recognition.start();
+                console.log('Recognition start called');
             } catch (e) {
                 console.error('Error starting recognition:', e);
+                alert("Couldn't start voice recording. Error: " + e.message);
             }
         }
 
@@ -1336,6 +1393,9 @@
             
             if (transcript.trim()) {
                 saveJournalEntry(transcript);
+            } else {
+                // Let them know nothing was captured
+                alert("No speech was captured. Your entry wasn't saved. You can try again or use 'Type It' instead.");
             }
             
             document.getElementById('recordingModal').classList.remove('active');
