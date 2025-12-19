@@ -7,6 +7,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // ========================================
+        // FIREBASE CONFIGURATION
+        // Replace these values with your own from Firebase Console
+        // ========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQbfG-S8fck0I-m3_UYRsIb2Dmuojdgb4",
+            authDomain: "aunite-margie-s-app.firebaseapp.com",
+            projectId: "aunite-margie-s-app",
+            storageBucket: "aunite-margie-s-app.firebasestorage.app",
+            messagingSenderId: "479080971530",
+            appId: "1:479080971530:web:70bdda6d0b3abe7ffb0ef3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+    
     <style>
         :root {
             --primary: #5B8A72;
@@ -595,25 +619,49 @@
         }
 
         function loadData() {
-            // Load from shared storage (synced with Margie's app)
-            const sharedData = localStorage.getItem('margieListSharedData');
-            if (sharedData) {
-                const parsed = JSON.parse(sharedData);
-                state.events = parsed.events || [];
-                state.journalEntries = parsed.journalEntries || [];
-            }
+            // Set up real-time listener for events from Firebase
+            db.collection('events').onSnapshot((snapshot) => {
+                state.events = [];
+                snapshot.forEach((doc) => {
+                    state.events.push({ id: doc.id, ...doc.data() });
+                });
+                renderEvents();
+            }, (error) => {
+                console.error("Error loading events:", error);
+            });
             
-            renderEvents();
-            renderJournal();
+            // Set up real-time listener for journal entries from Firebase
+            db.collection('journalEntries').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+                state.journalEntries = [];
+                snapshot.forEach((doc) => {
+                    state.journalEntries.push({ id: doc.id, ...doc.data() });
+                });
+                renderJournal();
+            }, (error) => {
+                console.error("Error loading journal:", error);
+            });
         }
 
-        function saveData() {
-            // Save to shared storage (synced with Margie's app)
-            localStorage.setItem('margieListSharedData', JSON.stringify({
-                events: state.events,
-                journalEntries: state.journalEntries,
-                lastUpdated: new Date().toISOString()
-            }));
+        // Save a new event to Firebase
+        async function saveEventToFirebase(event) {
+            try {
+                await db.collection('events').doc(event.id).set(event);
+                return true;
+            } catch (error) {
+                console.error("Error saving event:", error);
+                return false;
+            }
+        }
+        
+        // Delete an event from Firebase
+        async function deleteEventFromFirebase(eventId) {
+            try {
+                await db.collection('events').doc(eventId).delete();
+                return true;
+            } catch (error) {
+                console.error("Error deleting event:", error);
+                return false;
+            }
         }
 
         // ===== AUTHENTICATION =====
@@ -653,7 +701,7 @@
         }
 
         // ===== EVENTS =====
-        function handleAddEvent(e) {
+        async function handleAddEvent(e) {
             e.preventDefault();
             
             const event = {
@@ -664,25 +712,26 @@
                 notes: document.getElementById('eventNotes').value
             };
             
-            state.events.push(event);
-            saveData();
-            renderEvents();
+            // Save to Firebase
+            const success = await saveEventToFirebase(event);
             
-            // Clear form
-            document.getElementById('eventTitle').value = '';
-            document.getElementById('eventNotes').value = '';
-            
-            // Show success message
-            const success = document.getElementById('addSuccess');
-            success.classList.add('show');
-            setTimeout(() => success.classList.remove('show'), 3000);
+            if (success) {
+                // Clear form
+                document.getElementById('eventTitle').value = '';
+                document.getElementById('eventNotes').value = '';
+                
+                // Show success message
+                const successMsg = document.getElementById('addSuccess');
+                successMsg.classList.add('show');
+                setTimeout(() => successMsg.classList.remove('show'), 3000);
+            } else {
+                alert('Failed to add event. Please try again.');
+            }
         }
 
-        function deleteEvent(id) {
+        async function deleteEvent(id) {
             if (confirm('Remove this event?')) {
-                state.events = state.events.filter(e => e.id !== id);
-                saveData();
-                renderEvents();
+                await deleteEventFromFirebase(id);
             }
         }
 

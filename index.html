@@ -13,6 +13,29 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // ========================================
+        // FIREBASE CONFIGURATION
+        // Replace these values with your own from Firebase Console
+        // ========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQbfG-S8fck0I-m3_UYRsIb2Dmuojdgb4",
+            authDomain: "aunite-margie-s-app.firebaseapp.com",
+            projectId: "aunite-margie-s-app",
+            storageBucket: "aunite-margie-s-app.firebasestorage.app",
+            messagingSenderId: "479080971530",
+            appId: "1:479080971530:web:70bdda6d0b3abe7ffb0ef3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
     <style>
         :root {
             --primary: #5B8A72;
@@ -910,26 +933,92 @@
         }
 
         function loadState() {
-            // Load settings from main app storage
+            // Load settings from local storage (device-specific)
             const savedSettings = localStorage.getItem('margieListSettings');
             if (savedSettings) {
                 state.settings = JSON.parse(savedSettings);
             }
             
-            // Load events and journal from shared family storage
+            // Set up real-time listener for events from Firebase
+            db.collection('events').onSnapshot((snapshot) => {
+                state.events = [];
+                snapshot.forEach((doc) => {
+                    state.events.push({ id: doc.id, ...doc.data() });
+                });
+                renderEvents();
+                renderWeekAhead();
+                updateNextEvent();
+            }, (error) => {
+                console.error("Error loading events:", error);
+                // Fallback to localStorage if Firebase fails
+                loadFromLocalStorage();
+            });
+            
+            // Set up real-time listener for journal entries from Firebase
+            db.collection('journalEntries').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+                state.journalEntries = [];
+                snapshot.forEach((doc) => {
+                    state.journalEntries.push({ id: doc.id, ...doc.data() });
+                });
+                renderJournalEntries();
+            }, (error) => {
+                console.error("Error loading journal:", error);
+            });
+        }
+        
+        function loadFromLocalStorage() {
+            // Fallback if Firebase is unavailable
             const familyData = localStorage.getItem('margieListSharedData');
             if (familyData) {
                 const parsed = JSON.parse(familyData);
                 state.events = parsed.events || [];
                 state.journalEntries = parsed.journalEntries || [];
             }
+            renderEvents();
+            renderWeekAhead();
+            renderJournalEntries();
         }
 
         function saveState() {
-            // Save settings separately (app-specific)
+            // Save settings locally (device-specific)
             localStorage.setItem('margieListSettings', JSON.stringify(state.settings));
-            
-            // Save events and journal to shared storage (synced with family portal)
+        }
+        
+        // Save a new event to Firebase
+        async function saveEvent(event) {
+            try {
+                await db.collection('events').doc(event.id).set(event);
+            } catch (error) {
+                console.error("Error saving event:", error);
+                // Fallback: save locally
+                state.events.push(event);
+                saveToLocalStorage();
+            }
+        }
+        
+        // Delete an event from Firebase
+        async function deleteEvent(eventId) {
+            try {
+                await db.collection('events').doc(eventId).delete();
+            } catch (error) {
+                console.error("Error deleting event:", error);
+            }
+        }
+        
+        // Save a journal entry to Firebase
+        async function saveJournalToFirebase(entry) {
+            try {
+                await db.collection('journalEntries').doc(entry.id).set(entry);
+            } catch (error) {
+                console.error("Error saving journal entry:", error);
+                // Fallback: save locally
+                state.journalEntries.unshift(entry);
+                saveToLocalStorage();
+            }
+        }
+        
+        function saveToLocalStorage() {
+            // Backup to localStorage
             localStorage.setItem('margieListSharedData', JSON.stringify({
                 events: state.events,
                 journalEntries: state.journalEntries,
@@ -1269,9 +1358,8 @@
                 summary: null // Will be generated when online
             };
             
-            state.journalEntries.unshift(entry);
-            saveState();
-            renderJournalEntries();
+            // Save to Firebase (will trigger real-time update)
+            saveJournalToFirebase(entry);
             
             // Try to generate summary
             generateSummary(entry.id, text);
@@ -1290,11 +1378,13 @@
                 summary = "Margie talked about: " + text.substring(0, 100) + (text.length > 100 ? '...' : '');
             }
             
-            const entry = state.journalEntries.find(e => e.id === entryId);
-            if (entry) {
-                entry.summary = summary;
-                saveState();
-                renderJournalEntries();
+            // Update the entry with the summary in Firebase
+            try {
+                await db.collection('journalEntries').doc(entryId).update({
+                    summary: summary
+                });
+            } catch (error) {
+                console.error("Error updating summary:", error);
             }
         }
 
