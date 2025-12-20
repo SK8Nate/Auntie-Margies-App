@@ -15,20 +15,37 @@
     <script>
         // ========================================
         // FIREBASE CONFIGURATION
-        // Replace these values with your own from Firebase Console
         // ========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyBQbfG-S8fck0I-m3_UYRsIb2Dmuojdgb4",
-            authDomain: "aunite-margie-s-app.firebaseapp.com",
-            projectId: "aunite-margie-s-app",
-            storageBucket: "aunite-margie-s-app.firebasestorage.app",
-            messagingSenderId: "479080971530",
-            appId: "1:479080971530:web:70bdda6d0b3abe7ffb0ef3"
-        };
+        let db;
+        
+        function initFirebase() {
+            if (typeof firebase === 'undefined') {
+                console.error('Firebase SDK not loaded yet, retrying...');
+                setTimeout(initFirebase, 100);
+                return;
+            }
+            
+            const firebaseConfig = {
+                apiKey: "AIzaSyBQbfG-S8fck0I-m3_UYRsIb2Dmuojdgb4",
+                authDomain: "aunite-margie-s-app.firebaseapp.com",
+                projectId: "aunite-margie-s-app",
+                storageBucket: "aunite-margie-s-app.firebasestorage.app",
+                messagingSenderId: "479080971530",
+                appId: "1:479080971530:web:70bdda6d0b3abe7ffb0ef3"
+            };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            console.log('Firebase initialized successfully');
+        }
+        
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFirebase);
+        } else {
+            initFirebase();
+        }
     </script>
     
     <style>
@@ -619,6 +636,13 @@
         }
 
         function loadData() {
+            // Wait for Firebase to be ready
+            if (!db) {
+                console.log('Waiting for Firebase to initialize...');
+                setTimeout(loadData, 100);
+                return;
+            }
+            
             // Set up real-time listener for events from Firebase
             db.collection('events').onSnapshot((snapshot) => {
                 state.events = [];
@@ -644,6 +668,10 @@
 
         // Save a new event to Firebase
         async function saveEventToFirebase(event) {
+            if (!db) {
+                console.error("Firebase not ready yet");
+                return false;
+            }
             try {
                 await db.collection('events').doc(event.id).set(event);
                 return true;
@@ -655,6 +683,10 @@
         
         // Delete an event from Firebase
         async function deleteEventFromFirebase(eventId) {
+            if (!db) {
+                console.error("Firebase not ready yet");
+                return false;
+            }
             try {
                 await db.collection('events').doc(eventId).delete();
                 return true;
