@@ -18,12 +18,12 @@
         // Replace these values with your own from Firebase Console
         // ========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyBQbfG-S8fck0I-m3_UYRsIb2Dmuojdgb4",
-            authDomain: "aunite-margie-s-app.firebaseapp.com",
-            projectId: "aunite-margie-s-app",
-            storageBucket: "aunite-margie-s-app.firebasestorage.app",
-            messagingSenderId: "479080971530",
-            appId: "1:479080971530:web:70bdda6d0b3abe7ffb0ef3"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         // Initialize Firebase
@@ -774,7 +774,7 @@
             }
             
             container.innerHTML = filtered.map(event => {
-                const dateObj = new Date(event.date);
+                const dateObj = new Date(event.date + 'T00:00:00');
                 const dateStr = dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
                 const timeStr = formatTime(event.time);
                 
